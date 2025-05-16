@@ -6,6 +6,8 @@ import (
 	"todo-app/models"
 
 	"github.com/gofiber/fiber/v2"
+	"golang.org/x/crypto/bcrypt"
+	
 )
 
 func Register(c *fiber.Ctx) error {
@@ -14,8 +16,15 @@ func Register(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Data tidak valid"})
 	}
 
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal mengenkripsi password"})
+	}
+	user.Password = string(hashedPassword)
+
 	collection := database.DB.Collection("users")
-	_, err := collection.InsertOne(context.Background(), user)
+	_, err = collection.InsertOne(context.Background(), user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal menyimpan pengguna"})
 	}
