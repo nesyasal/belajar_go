@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func Register(c *fiber.Ctx) error {
@@ -58,4 +59,29 @@ func Login(c *fiber.Ctx) error {
 		"name":    user.Name,
 		"email": user.Email, 
 	})
+}
+
+func GetAllUsers(c *fiber.Ctx) error {
+	collection := database.DB.Collection("users")
+
+	// Ambil semua dokumen
+	cursor, err := collection.Find(context.Background(), bson.M{}, options.Find())
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal mengambil data pengguna"})
+	}
+	defer cursor.Close(context.Background())
+
+	var users []models.User
+	for cursor.Next(context.Background()) {
+		var user models.User
+		if err := cursor.Decode(&user); err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal mendekode data pengguna"})
+		}
+
+		// Hapus password sebelum mengirim ke client
+		user.Password = ""
+		users = append(users, user)
+	}
+
+	return c.JSON(users)
 }
