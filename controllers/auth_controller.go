@@ -4,6 +4,7 @@ import (
 	"context"
 	"todo-app/database"
 	"todo-app/models"
+	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
@@ -39,10 +40,21 @@ func Login(c *fiber.Ctx) error {
 
 	var user models.User
 	collection := database.DB.Collection("users")
-	err := collection.FindOne(context.Background(), fiber.Map{"email": input.Email, "password": input.Password}).Decode(&user)
+
+	// Cari user berdasarkan email saja
+	err := collection.FindOne(context.Background(), bson.M{"email": input.Email}).Decode(&user)
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Email atau password salah"})
 	}
 
-	return c.JSON(fiber.Map{"message": "Login berhasil", "user": user})
+	// Cek password menggunakan bcrypt
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Email atau password salah"})
+	}
+
+	return c.JSON(fiber.Map{
+		"message": "Login berhasil",
+		"user":    user, 
+	})
 }
