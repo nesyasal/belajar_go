@@ -7,7 +7,6 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
-	
 )
 
 func Register(c *fiber.Ctx) error {
