@@ -15,7 +15,7 @@ func main() {
 	app.Use(logger.New(logger.Config{
         Format: "${status} - ${method} ${path}\n",
     }))
-    routes.SetupRoutes(app)
+    routes.AuthRoutes(app)
 
     app.Listen(":3000")
 }
