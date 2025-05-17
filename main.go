@@ -16,6 +16,7 @@ func main() {
         Format: "${status} - ${method} ${path}\n",
     }))
     routes.AuthRoutes(app)
+    routes.SetupRoutes(app)
 
     app.Listen(":3000")
 }
