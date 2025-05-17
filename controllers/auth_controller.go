@@ -4,11 +4,12 @@ import (
 	"context"
 	"todo-app/database"
 	"todo-app/models"
+
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/gofiber/fiber/v2"
-	"golang.org/x/crypto/bcrypt"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func Register(c *fiber.Ctx) error {
@@ -57,7 +58,7 @@ func Login(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"message": "Login berhasil",
 		"name":    user.Name,
-		"email": user.Email, 
+		"email":   user.Email,
 	})
 }
 
@@ -71,16 +72,18 @@ func GetAllUsers(c *fiber.Ctx) error {
 	}
 	defer cursor.Close(context.Background())
 
-	var users []models.User
+	var users []models.UserResponse
 	for cursor.Next(context.Background()) {
 		var user models.User
 		if err := cursor.Decode(&user); err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal mendekode data pengguna"})
 		}
 
-		// Hapus password sebelum mengirim ke client
-		user.Password = ""
-		users = append(users, user)
+		users = append(users, models.UserResponse{
+			ID:    user.ID.Hex(),
+			Name:  user.Name,
+			Email: user.Email,
+		})
 	}
 
 	return c.JSON(users)
