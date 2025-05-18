@@ -3,7 +3,6 @@ package main
 import (
     "todo-app/database"
     "todo-app/routes"
-
     "github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 )
