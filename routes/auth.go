@@ -2,7 +2,6 @@ package routes
 
 import (
 	"todo-app/controllers"
-
 	"github.com/gofiber/fiber/v2"
 )
 
