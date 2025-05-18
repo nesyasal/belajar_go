@@ -4,7 +4,6 @@ import (
 	"context"
 	"todo-app/database"
 	"todo-app/models"
-
 	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/gofiber/fiber/v2"
