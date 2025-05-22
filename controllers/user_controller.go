@@ -69,5 +69,11 @@ func GetOneUser(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.JSON(user)
+	userResponse := models.UserResponse{
+		ID:    user.ID.Hex(),
+		Name:  user.Name,
+		Email: user.Email,
+	}
+
+	return c.JSON(userResponse)
 }
