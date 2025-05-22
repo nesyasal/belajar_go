@@ -14,4 +14,5 @@ func AuthRoutes(app *fiber.App) {
 func SetupRoutes(app *fiber.App) {
 	api := app.Group("/api")
 	api.Get("/users-list", controllers.GetAllUsers)
+	api.Get("/users/:id", controllers.GetOneUser)
 }
