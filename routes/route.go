@@ -13,6 +13,7 @@ func AuthRoutes(app *fiber.App) {
 
 func SetupRoutes(app *fiber.App) {
 	api := app.Group("/api")
+	api.Post("/users", controllers.CreateUser)
 	api.Get("/users-list", controllers.GetAllUsers)
 	api.Get("/users/:id", controllers.GetOneUser)
 	api.Put("/users/:id", controllers.UpdateUser)
