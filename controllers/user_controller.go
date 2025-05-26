@@ -77,3 +77,59 @@ func GetOneUser(c *fiber.Ctx) error {
 
 	return c.JSON(userResponse)
 }
+
+func UpdateUser(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	// Validasi ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid ID format",
+		})
+	}
+
+	// Binding data dari body
+	var updateData struct {
+		Name  string `json:"name"`
+		Email string `json:"email"`
+	}
+
+	if err := c.BodyParser(&updateData); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collection := database.DB.Collection("users")
+
+	// Membuat update data
+	update := bson.M{
+		"$set": bson.M{
+			"name":  updateData.Name,
+			"email": updateData.Email,
+		},
+	}
+
+	// Eksekusi update
+	result, err := collection.UpdateOne(ctx, bson.M{"_id": objectID}, update)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to update user",
+		})
+	}
+
+	if result.MatchedCount == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "User not found",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"message": "User updated successfully",
+	})
+}
+
