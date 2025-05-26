@@ -13,6 +13,48 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func CreateUser(c *fiber.Ctx) error {
+	// Parse body ke struct User
+	var user models.User
+	if err := c.BodyParser(&user); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+
+	// Validasi data (contoh sederhana)
+	if user.Name == "" || user.Email == "" || user.Password == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Name, Email, and Password are required",
+		})
+	}
+
+	// Buat ID baru
+	user.ID = primitive.NewObjectID()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	collection := database.DB.Collection("users")
+
+	_, err := collection.InsertOne(ctx, user)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to create user",
+		})
+	}
+
+	// Kirim response tanpa password
+	userResponse := models.UserResponse{
+		ID:    user.ID.Hex(),
+		Name:  user.Name,
+		Email: user.Email,
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(userResponse)
+}
+
+
 func GetAllUsers(c *fiber.Ctx) error {
 	collection := database.DB.Collection("users")
 
