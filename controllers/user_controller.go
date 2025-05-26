@@ -11,6 +11,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func CreateUser(c *fiber.Ctx) error {
@@ -29,6 +30,12 @@ func CreateUser(c *fiber.Ctx) error {
 		})
 	}
 
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal mengenkripsi password"})
+	}
+	user.Password = string(hashedPassword)
+
 	// Buat ID baru
 	user.ID = primitive.NewObjectID()
 
@@ -37,7 +44,7 @@ func CreateUser(c *fiber.Ctx) error {
 
 	collection := database.DB.Collection("users")
 
-	_, err := collection.InsertOne(ctx, user)
+	_, err = collection.InsertOne(ctx, user)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to create user",
@@ -53,7 +60,6 @@ func CreateUser(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusCreated).JSON(userResponse)
 }
-
 
 func GetAllUsers(c *fiber.Ctx) error {
 	collection := database.DB.Collection("users")
@@ -174,4 +180,3 @@ func UpdateUser(c *fiber.Ctx) error {
 		"message": "User updated successfully",
 	})
 }
-
